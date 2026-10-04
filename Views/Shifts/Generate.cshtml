@@ -1,0 +1,63 @@
+@model GenerateShiftsViewModel
+@{
+    ViewData["Title"] = "Generate shift roster";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header sh-card-header text-white"><h5 class="mb-0">Generate shift roster</h5></div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    Creates unclaimed duty slots for the selected dates. Slots that already exist are skipped,
+                    so it is safe to run this repeatedly.
+                </p>
+
+                <form asp-action="Generate" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="FromDate" class="form-label"></label>
+                            <input asp-for="FromDate" type="date" class="form-control" />
+                            <span asp-validation-for="FromDate" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ToDate" class="form-label"></label>
+                            <input asp-for="ToDate" type="date" class="form-control" />
+                            <span asp-validation-for="ToDate" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="form-label d-block">Shift types</span>
+                        <div class="form-check">
+                            <input class="form-check-input" asp-for="IncludeMorning" />
+                            <label class="form-check-label" asp-for="IncludeMorning">Morning (06:00 - 14:00)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" asp-for="IncludeAfternoon" />
+                            <label class="form-check-label" asp-for="IncludeAfternoon">Afternoon (14:00 - 22:00)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" asp-for="IncludeNight" />
+                            <label class="form-check-label" asp-for="IncludeNight">Night (22:00 - 06:00)</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Area" class="form-label"></label>
+                        <input asp-for="Area" class="form-control" placeholder="Terminal 1" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Create shifts</button>
+                    <a class="btn btn-outline-secondary" asp-action="Index">Back to shifts</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

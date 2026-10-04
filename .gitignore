@@ -1,0 +1,33 @@
+## Build output
+bin/
+obj/
+
+## Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Runtime output: generated PDFs and undelivered e-mails
+App_Data/
+
+## Publish output
+publish/
+
+## Publish profiles and Web Deploy settings contain the deployment password in cleartext
+*.pubxml
+*.publishSettings
+*.deploy.cmd
+
+## Secrets - keep SMTP credentials out of source control
+appsettings.Production.json
+appsettings.*.local.json
+*.env
+
+## OS / misc
+Thumbs.db
+.DS_Store
+*.log

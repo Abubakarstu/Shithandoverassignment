@@ -1,0 +1,86 @@
+html, body {
+    font-size: 14px;
+}
+
+body {
+    background-color: #f4f6f9;
+}
+
+.sh-navbar {
+    background-color: #0f4c81;
+}
+
+.sh-container {
+    max-width: 1400px;
+    padding-top: 1.25rem;
+}
+
+.sh-card-header {
+    background-color: #0f4c81;
+    font-weight: 600;
+}
+
+.sh-stat {
+    border-top: 3px solid #0f4c81;
+}
+
+.sh-stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.sh-stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #6c757d;
+}
+
+.badge.badge-open {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.badge.badge-claimed {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.badge.badge-closed {
+    background-color: #198754;
+    color: #fff;
+}
+
+.badge.low {
+    background-color: #adb5bd;
+    color: #000;
+}
+
+.badge.medium {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge.high {
+    background-color: #fd7e14;
+    color: #fff;
+}
+
+.badge.critical {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+table thead th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #495057;
+    white-space: nowrap;
+}
+
+.footer {
+    padding: 1rem 0;
+    font-size: 0.8rem;
+}

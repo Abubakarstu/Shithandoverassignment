@@ -1,0 +1,132 @@
+@{
+    var shift = (Shift)ViewBag.Shift;
+    var canEdit = (bool)ViewBag.CanEdit;
+    var records = (IReadOnlyList<ManpowerRecord>)ViewBag.Records;
+    ViewData["Title"] = "Manpower";
+
+    var totalPlanned = records.Sum(x => x.Planned);
+    var totalOnDuty = records.Sum(x => x.OnDuty);
+    var totalLeave = records.Sum(x => x.OnLeave);
+    var totalAbsent = records.Sum(x => x.Absent);
+    var totalOvertime = records.Sum(x => x.Overtime);
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-1">Manpower Details</h3>
+        <span class="text-muted">
+            @shift.ShiftType shift &mdash; @shift.ShiftDate.ToString("dd MMM yyyy") (@Display.ShiftWindow(shift))
+            <span class="badge @shift.StatusBadge ms-1">@shift.Status</span>
+        </span>
+    </div>
+    <div class="d-flex gap-2">
+        @if (canEdit)
+        {
+            <a class="btn btn-secondary" asp-action="Create" asp-route-shiftId="@shift.Id">+ Add function</a>
+        }
+        <a class="btn btn-outline-secondary" asp-controller="Shifts" asp-action="Details" asp-route-id="@shift.Id">Back to shift</a>
+    </div>
+</div>
+
+@if (!canEdit)
+{
+    <div class="alert alert-warning">
+        @if (shift.Status == ShiftStatus.Closed)
+        {
+            <text>This shift is closed, so its manpower records are read-only.</text>
+        }
+        else
+        {
+            <text>This shift is not yours. Only @shift.ClaimedBy?.FullName can add or edit manpower records.</text>
+        }
+    </div>
+}
+
+@if (records.Count > 0)
+{
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg"><div class="card sh-stat text-center"><div class="card-body"><div class="sh-stat-value">@totalPlanned</div><div class="sh-stat-label">Planned</div></div></div></div>
+        <div class="col-6 col-lg"><div class="card sh-stat text-center"><div class="card-body"><div class="sh-stat-value text-success">@totalOnDuty</div><div class="sh-stat-label">On duty</div></div></div></div>
+        <div class="col-6 col-lg"><div class="card sh-stat text-center"><div class="card-body"><div class="sh-stat-value text-info">@totalLeave</div><div class="sh-stat-label">On leave</div></div></div></div>
+        <div class="col-6 col-lg"><div class="card sh-stat text-center"><div class="card-body"><div class="sh-stat-value text-danger">@totalAbsent</div><div class="sh-stat-label">Absent</div></div></div></div>
+        <div class="col-6 col-lg"><div class="card sh-stat text-center"><div class="card-body"><div class="sh-stat-value text-warning">@totalOvertime</div><div class="sh-stat-label">Overtime</div></div></div></div>
+    </div>
+}
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Function / Area</th>
+                    <th class="text-center">Planned</th>
+                    <th class="text-center">On duty</th>
+                    <th class="text-center">On leave</th>
+                    <th class="text-center">Absent</th>
+                    <th class="text-center">Overtime</th>
+                    <th class="text-center">Shortfall</th>
+                    <th>Remarks</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (records.Count == 0)
+                {
+                    <tr><td colspan="9" class="text-center text-muted py-4">No manpower details recorded on this shift.</td></tr>
+                }
+                @foreach (var record in records)
+                {
+                    <tr>
+                        <td><strong>@record.FunctionName</strong></td>
+                        <td class="text-center">@record.Planned</td>
+                        <td class="text-center fw-bold @(record.OnDuty < record.Planned ? "text-danger" : "text-success")">@record.OnDuty</td>
+                        <td class="text-center">@record.OnLeave</td>
+                        <td class="text-center">@record.Absent</td>
+                        <td class="text-center">@record.Overtime</td>
+                        <td class="text-center">
+                            @if (record.Shortfall > 0)
+                            {
+                                <span class="badge bg-danger">@record.Shortfall</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">0</span>
+                            }
+                        </td>
+                        <td class="small">@(record.Remarks ?? "-")</td>
+                        <td class="text-end text-nowrap">
+                            @if (canEdit)
+                            {
+                                <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@record.Id">Edit</a>
+                                <form asp-action="Delete" asp-route-id="@record.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('Delete this manpower row?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">Read only</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            @if (records.Count > 0)
+            {
+                <tfoot class="table-light fw-bold">
+                    <tr>
+                        <td>Total</td>
+                        <td class="text-center">@totalPlanned</td>
+                        <td class="text-center">@totalOnDuty</td>
+                        <td class="text-center">@totalLeave</td>
+                        <td class="text-center">@totalAbsent</td>
+                        <td class="text-center">@totalOvertime</td>
+                        <td class="text-center">@Math.Max(0, totalPlanned - totalOnDuty)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            }
+        </table>
+    </div>
+</div>

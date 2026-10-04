@@ -1,0 +1,47 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = "_Layout";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header sh-card-header text-white">
+                <h5 class="mb-0">Supervisor Sign In</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Login" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" autocomplete="username" autofocus />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Sign in</button>
+                </form>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="small text-muted">
+                    <strong>Demo accounts</strong> (password <code>Pass@123</code>):<br />
+                    sara.almansoori@gulfair.test &mdash; Admin<br />
+                    mohammed.alzaabi@gulfair.test &mdash; Supervisor<br />
+                    fatima.alblooshi@gulfair.test &mdash; Supervisor<br />
+                    omar.alsuwaidi@gulfair.test &mdash; Supervisor
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,55 @@
+@model CloseShiftViewModel
+@{
+    var shift = (Shift)ViewBag.Shift;
+    ViewData["Title"] = "Close shift";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header sh-card-header text-white">
+                <h5 class="mb-0">Close shift &amp; send handover report</h5>
+            </div>
+            <div class="card-body">
+                @if (shift is not null)
+                {
+                    <div class="alert alert-info">
+                        <div><strong>@shift.ShiftType shift &mdash; @shift.ShiftDate.ToString("dd MMM yyyy")</strong> (@Display.ShiftWindow(shift))</div>
+                        <div class="small mt-1">
+                            Closing this shift freezes all records. A PDF handover report will be generated and
+                            automatically e-mailed to every other supervisor.
+                        </div>
+                    </div>
+                }
+
+                <form asp-action="Close" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="ShiftId" />
+
+                    <div class="mb-3">
+                        <label asp-for="HandoverRemarks" class="form-label"></label>
+                        <textarea asp-for="HandoverRemarks" rows="4" class="form-control"
+                                  placeholder="Overall status of the shift, equipment condition, notable events..."></textarea>
+                        <span asp-validation-for="HandoverRemarks" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="PendingActions" class="form-label"></label>
+                        <textarea asp-for="PendingActions" rows="4" class="form-control"
+                                  placeholder="Open items the oncoming shift must pick up..."></textarea>
+                        <span asp-validation-for="PendingActions" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">Close shift and send report</button>
+                        <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@Model.ShiftId">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

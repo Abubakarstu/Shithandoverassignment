@@ -1,0 +1,73 @@
+@model List<EmailLog>
+@{
+    ViewData["Title"] = "E-mail log";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Automatic E-mail Log</h3>
+    <a class="btn btn-outline-secondary" asp-controller="Reports" asp-action="Index">Back to reports</a>
+</div>
+
+<p class="text-muted small">
+    Every time a shift is closed the handover PDF is e-mailed to the other supervisors.
+    If no SMTP server is configured the message and its PDF are written to
+    <code>App_Data/EmailOutbox</code> instead, which is recorded here as <em>Queued To Outbox</em>.
+</p>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Created</th>
+                    <th>Shift</th>
+                    <th>Subject</th>
+                    <th>Recipients</th>
+                    <th>Attachment</th>
+                    <th>Status</th>
+                    <th>Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-4">No e-mails have been generated yet.</td></tr>
+                }
+                @foreach (var email in Model)
+                {
+                    <tr>
+                        <td class="text-nowrap small">@Display.Pretty(email.CreatedAt)</td>
+                        <td>
+                            @if (email.Shift is not null)
+                            {
+                                <a asp-action="Preview" asp-route-shiftId="@email.ShiftId" target="_blank">
+                                    @email.Shift.ShiftType, @email.Shift.ShiftDate.ToString("dd MMM")
+                                </a>
+                            }
+                            else
+                            {
+                                <span>#@email.ShiftId</span>
+                            }
+                        </td>
+                        <td class="small">@email.Subject</td>
+                        <td class="small">@email.ToAddresses</td>
+                        <td class="small">@email.AttachmentFileName</td>
+                        <td>
+                            <span class="badge @email.Status switch
+                            {
+                                DeliveryStatus.Sent => "bg-success",
+                                DeliveryStatus.QueuedToOutbox => "bg-warning text-dark",
+                                _ => "bg-danger"
+                            }">@Display.Humanise(email.Status)</span>
+                            @if (email.SentAt.HasValue)
+                            {
+                                <div class="small text-muted">@email.SentAt.Value.ToString("HH:mm:ss")</div>
+                            }
+                        </td>
+                        <td class="small text-muted">@email.ErrorMessage</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

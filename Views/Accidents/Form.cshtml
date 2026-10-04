@@ -1,0 +1,111 @@
+@model AccidentViewModel
+@{
+    var isEdit = Model.Id.HasValue;
+    ViewData["Title"] = isEdit ? "Edit accident" : "Record accident";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header sh-card-header text-white">
+                <h5 class="mb-0">@(isEdit ? "Edit accident record" : "Record an accident")</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info py-2 small">Shift: <strong>@Model.ShiftLabel</strong></div>
+
+                <form asp-action="Save" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="ShiftId" />
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="OccurredAt" class="form-label"></label>
+                            <input asp-for="OccurredAt" type="datetime-local" class="form-control" />
+                            <span asp-validation-for="OccurredAt" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="AccidentType" class="form-label"></label>
+                            <select asp-for="AccidentType" asp-items="Model.AccidentTypeList" class="form-select"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Severity" class="form-label"></label>
+                            <select asp-for="Severity" asp-items="Model.SeverityList" class="form-select"></select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Location" class="form-label"></label>
+                            <input asp-for="Location" class="form-control" placeholder="Stand 12 - Ramp" />
+                            <span asp-validation-for="Location" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="PersonsInjured" class="form-label"></label>
+                            <input asp-for="PersonsInjured" class="form-control" />
+                            <span asp-validation-for="PersonsInjured" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="InjuryType" class="form-label"></label>
+                            <input asp-for="InjuryType" class="form-control" placeholder="Fracture / LMP" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="PersonsInvolved" class="form-label"></label>
+                            <input asp-for="PersonsInvolved" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ReportedTo" class="form-label"></label>
+                            <input asp-for="ReportedTo" class="form-control" placeholder="Safety & HSE" />
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" rows="3" class="form-control"
+                                      placeholder="What happened, where, and who was involved..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="ImmediateActionTaken" class="form-label"></label>
+                            <textarea asp-for="ImmediateActionTaken" rows="3" class="form-control"
+                                      placeholder="First aid, area made safe, equipment isolated..."></textarea>
+                            <span asp-validation-for="ImmediateActionTaken" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="InvestigationStatus" class="form-label"></label>
+                            <select asp-for="InvestigationStatus" asp-items="Model.InvestigationStatusList" class="form-select"></select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" asp-for="IsReportable" />
+                                <label class="form-check-label" asp-for="IsReportable">Reportable to the regulator</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">@(isEdit ? "Save changes" : "Record accident")</button>
+                        <a class="btn btn-outline-secondary" asp-action="Index" asp-route-shiftId="@Model.ShiftId">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // A recordable/fatal accident or 2+ injuries must be escalated automatically.
+        function syncReportable() {
+            var type = document.getElementById('AccidentType').value;
+            var injured = parseInt(document.getElementById('PersonsInjured').value || '0', 10);
+            var box = document.getElementById('IsReportable');
+            if (type === 'Recordable' || type === 'Fatal' || injured >= 2) {
+                box.checked = true;
+            }
+        }
+        document.getElementById('AccidentType').addEventListener('change', syncReportable);
+        document.getElementById('PersonsInjured').addEventListener('input', syncReportable);
+    </script>
+}

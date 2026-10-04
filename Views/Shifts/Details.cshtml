@@ -1,0 +1,173 @@
+@model Shift
+@{
+    var canEdit = (bool)ViewBag.CanEdit;
+    var supervisorId = (int)ViewBag.SupervisorId;
+    var isMine = Model.ClaimedById == supervisorId;
+    var accidents = Model.Accidents.Count;
+    var incidents = Model.Incidents.Count;
+    var manpowerRows = Model.ManpowerRecords.Count;
+    ViewData["Title"] = $"{Model.ShiftType} shift - {Model.ShiftDate:dd MMM yyyy}";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+    <div>
+        <h3 class="mb-1">@Model.ShiftType Shift &mdash; @Model.ShiftDate.ToString("dddd, dd MMMM yyyy")</h3>
+        <span class="badge @Model.StatusBadge fs-6">@Model.Status</span>
+        <span class="text-muted ms-2">@Display.ShiftWindow(Model) &middot; @(Model.Area ?? "Area not set")</span>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        @if (Model.Status == ShiftStatus.Open)
+        {
+            <form asp-action="Claim" asp-route-id="@Model.Id" method="post">
+                <button type="submit" class="btn btn-primary">Claim this shift</button>
+            </form>
+        }
+        else if (canEdit)
+        {
+            <a class="btn btn-outline-danger" asp-action="Close" asp-route-id="@Model.Id">Close shift &amp; send handover</a>
+            <form asp-action="Release" asp-route-id="@Model.Id" method="post"
+                  onsubmit="return confirm('Release this shift back to the pool?');">
+                <button type="submit" class="btn btn-outline-secondary">Release</button>
+            </form>
+        }
+        @if (Model.Status == ShiftStatus.Closed)
+        {
+            <a class="btn btn-outline-primary" asp-controller="Reports" asp-route-shiftId="@Model.Id" asp-action="Preview">View PDF report</a>
+        }
+    </div>
+</div>
+
+@if (Model.Status == ShiftStatus.Closed)
+{
+    <div class="alert alert-secondary">
+        <strong>This shift is closed and read-only.</strong>
+        Closed by @Model.ClosedBy?.FullName on @Display.Pretty(Model.ClosedAt ?? Model.CreatedAt).
+        No further edits are possible.
+    </div>
+}
+else if (Model.Status == ShiftStatus.Claimed && !isMine)
+{
+    <div class="alert alert-warning">
+        <strong>Locked.</strong> This shift was claimed by @Model.ClaimedBy?.FullName at
+        @Display.Pretty(Model.ClaimedAt ?? Model.CreatedAt). Only the claiming supervisor can add or edit records.
+    </div>
+}
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header sh-card-header text-white">Shift Information</div>
+            <table class="table table-sm mb-0">
+                <tbody>
+                    <tr><th class="w-50">Shift ID</th><td>#@Model.Id</td></tr>
+                    <tr><th>Date</th><td>@Model.ShiftDate.ToString("dd MMM yyyy")</td></tr>
+                    <tr><th>Type</th><td>@Model.ShiftType</td></tr>
+                    <tr><th>Window</th><td>@Display.ShiftWindow(Model)</td></tr>
+                    <tr><th>Area</th><td>@(Model.Area ?? "-")</td></tr>
+                    <tr><th>Status</th><td><span class="badge @Model.StatusBadge">@Model.Status</span></td></tr>
+                    <tr><th>Claimed by</th><td>@(Model.ClaimedBy?.DisplayName ?? "-")</td></tr>
+                    <tr><th>Claimed at</th><td>@(Model.ClaimedAt.HasValue ? Display.Pretty(Model.ClaimedAt.Value) : "-")</td></tr>
+                    <tr><th>Closed by</th><td>@(Model.ClosedBy?.DisplayName ?? "-")</td></tr>
+                    <tr><th>Closed at</th><td>@(Model.ClosedAt.HasValue ? Display.Pretty(Model.ClosedAt.Value) : "-")</td></tr>
+                </tbody>
+            </table>
+            @if (!string.IsNullOrWhiteSpace(Model.Remarks))
+            {
+                <div class="card-body border-top small text-muted">@Model.Remarks</div>
+            }
+        </div>
+
+        @if (Model.Status == ShiftStatus.Closed)
+        {
+            <div class="card mb-3">
+                <div class="card-header sh-card-header text-white">Handover Notes</div>
+                <div class="card-body">
+                    <div class="small text-uppercase text-muted">Remarks</div>
+                    <p class="mb-3">@(string.IsNullOrWhiteSpace(Model.HandoverRemarks) ? "None recorded." : Model.HandoverRemarks)</p>
+                    <div class="small text-uppercase text-muted">Pending actions</div>
+                    <p class="mb-0">@(string.IsNullOrWhiteSpace(Model.PendingActions) ? "None recorded." : Model.PendingActions)</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-8">
+        <div class="row g-3 mb-1">
+            <div class="col-4">
+                <a class="btn btn-outline-danger w-100 position-relative" asp-controller="Accidents" asp-action="Index" asp-route-shiftId="@Model.Id">
+                    Accidents <span class="badge bg-danger">@accidents</span>
+                </a>
+            </div>
+            <div class="col-4">
+                <a class="btn btn-outline-warning w-100 position-relative" asp-controller="Incidents" asp-action="Index" asp-route-shiftId="@Model.Id">
+                    Incidents <span class="badge bg-warning text-dark">@incidents</span>
+                </a>
+            </div>
+            <div class="col-4">
+                <a class="btn btn-outline-secondary w-100 position-relative" asp-controller="Manpower" asp-action="Index" asp-route-shiftId="@Model.Id">
+                    Manpower <span class="badge bg-secondary">@manpowerRows</span>
+                </a>
+            </div>
+        </div>
+
+        @if (canEdit)
+        {
+            <div class="card mb-3">
+                <div class="card-header sh-card-header text-white">Quick add</div>
+                <div class="card-body d-flex flex-wrap gap-2">
+                    <a class="btn btn-sm btn-danger" asp-controller="Accidents" asp-action="Create" asp-route-shiftId="@Model.Id">+ Accident</a>
+                    <a class="btn btn-sm btn-warning" asp-controller="Incidents" asp-action="Create" asp-route-shiftId="@Model.Id">+ Incident</a>
+                    <a class="btn btn-sm btn-secondary" asp-controller="Manpower" asp-action="Create" asp-route-shiftId="@Model.Id">+ Manpower row</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-light border">
+                Logging is disabled. A shift can only be edited by the supervisor who claimed it, and only while it is open.
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header sh-card-header text-white">Recorded on this shift</div>
+            <div class="card-body">
+                @if (accidents == 0 && incidents == 0 && manpowerRows == 0)
+                {
+                    <p class="text-muted mb-0">Nothing has been logged on this shift yet.</p>
+                }
+                else
+                {
+                    <ul class="mb-0">
+                        @foreach (var accident in Model.Accidents.OrderBy(x => x.OccurredAt))
+                        {
+                            <li class="mb-2">
+                                <span class="badge bg-danger">@Display.TimeOnly(accident.OccurredAt)</span>
+                                <strong>@Display.Humanise(accident.AccidentType)</strong> &mdash; @accident.Location
+                                <div class="small text-muted">@Display.Truncate(accident.Description, 140)</div>
+                            </li>
+                        }
+                        @foreach (var incident in Model.Incidents.OrderBy(x => x.OccurredAt))
+                        {
+                            <li class="mb-2">
+                                <span class="badge bg-warning text-dark">@Display.TimeOnly(incident.OccurredAt)</span>
+                                <strong>@Display.Humanise(incident.Category)</strong> &mdash; @incident.Location
+                                <div class="small text-muted">@Display.Truncate(incident.Description, 140)</div>
+                            </li>
+                        }
+                        @foreach (var m in Model.ManpowerRecords.OrderBy(x => x.FunctionName))
+                        {
+                            <li class="mb-1">
+                                <span class="badge bg-secondary">MP</span>
+                                <strong>@m.FunctionName</strong>: @m.OnDuty on duty / @m.Planned planned
+                                @if (m.Shortfall > 0)
+                                {
+                                    <span class="text-danger small">(short @m.Shortfall)</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+</div>

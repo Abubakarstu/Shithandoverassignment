@@ -1,0 +1,173 @@
+﻿@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0">Dashboard</h3>
+        <span class="text-muted">Welcome, @Model.SupervisorName</span>
+    </div>
+    <div>
+        <a class="btn btn-primary" asp-controller="Shifts" asp-action="Index">Browse shifts</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-2">
+        <div class="card sh-stat text-center">
+            <div class="card-body">
+                <div class="sh-stat-value">@Model.OpenShifts</div>
+                <div class="sh-stat-label">Shifts waiting to be claimed</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="card sh-stat text-center">
+            <div class="card-body">
+                <div class="sh-stat-value text-primary">@Model.MyActiveShifts</div>
+                <div class="sh-stat-label">My active shifts</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="card sh-stat text-center">
+            <div class="card-body">
+                <div class="sh-stat-value text-success">@Model.ClosedToday</div>
+                <div class="sh-stat-label">Shifts closed today</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="card sh-stat text-center">
+            <div class="card-body">
+                <div class="sh-stat-value text-danger">@Model.AccidentsThisMonth</div>
+                <div class="sh-stat-label">Accidents this month</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="card sh-stat text-center">
+            <div class="card-body">
+                <div class="sh-stat-value text-warning">@Model.IncidentsThisMonth</div>
+                <div class="sh-stat-label">Incidents this month</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="card sh-stat text-center">
+            <div class="card-body">
+                <a class="btn btn-sm btn-outline-secondary w-100" asp-controller="Reports" asp-action="Index">
+                    Reports &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card mb-3">
+            <div class="card-header sh-card-header text-white">My claimed shifts</div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Shift</th>
+                            <th>Window</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.MyActiveShiftList.Count == 0)
+                        {
+                            <tr><td colspan="5" class="text-center text-muted py-3">You have no active shifts. Claim one from the shifts list.</td></tr>
+                        }
+                        @foreach (var shift in Model.MyActiveShiftList)
+                        {
+                            <tr>
+                                <td>@shift.ShiftDate.ToString("dd MMM yyyy")</td>
+                                <td>@shift.ShiftType</td>
+                                <td>@Display.ShiftWindow(shift)</td>
+                                <td><span class="badge @shift.StatusBadge">@shift.Status</span></td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-primary" asp-controller="Shifts" asp-action="Details" asp-route-id="@shift.Id">Open</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header sh-card-header text-white">Shifts available to claim</div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Shift</th>
+                            <th>Window</th>
+                            <th>Area</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.OpenShiftList.Count == 0)
+                        {
+                            <tr><td colspan="5" class="text-center text-muted py-3">No unclaimed shifts available.</td></tr>
+                        }
+                        @foreach (var shift in Model.OpenShiftList)
+                        {
+                            <tr>
+                                <td>@shift.ShiftDate.ToString("dd MMM yyyy")</td>
+                                <td>@shift.ShiftType</td>
+                                <td>@Display.ShiftWindow(shift)</td>
+                                <td>@(shift.Area ?? "-")</td>
+                                <td class="text-end">
+                                    <form asp-controller="Shifts" asp-action="Claim" asp-route-id="@shift.Id" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-primary">Claim</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header sh-card-header text-white">Recent automatic e-mails</div>
+            <div class="list-group list-group-flush">
+                @if (Model.RecentEmails.Count == 0)
+                {
+                    <div class="list-group-item text-muted">No reports have been distributed yet.</div>
+                }
+                @foreach (var email in Model.RecentEmails)
+                {
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong class="small">@email.Subject</strong>
+                            <span class="badge @email.Status switch
+                            {
+                                DeliveryStatus.Sent => "bg-success",
+                                DeliveryStatus.QueuedToOutbox => "bg-warning text-dark",
+                                _ => "bg-danger"
+                            }">@Display.Humanise(email.Status)</span>
+                        </div>
+                        <div class="small text-muted">To: @email.ToAddresses</div>
+                        <div class="small text-muted">@Display.Pretty(email.CreatedAt)</div>
+                    </div>
+                }
+            </div>
+            <div class="card-footer bg-light">
+                <a class="small" asp-controller="Reports" asp-action="EmailLog">View the full e-mail log</a>
+            </div>
+        </div>
+    </div>
+</div>
