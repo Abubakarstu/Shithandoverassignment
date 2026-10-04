@@ -1,18 +1,85 @@
-# Build and Release Folders
-bin-debug/
-bin-release/
-[Oo]bj/
+# Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
 [Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+arm64/
 
-# Other files and folders
-.settings/
+# Visual Studio cache
+*.pdb
+*.cache
+*.log
 
-# Executables
-*.swf
-*.air
-*.ipa
-*.apk
+# NuGet
+packages/
+*.nupkg
+*.snupkg
 
-# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
-# should NOT be excluded as they contain compiler settings and other important
-# information for Eclipse / Flash Builder.
+# ASP.NET temporary files
+App_Data/
+aspnet_client/
+*.bak
+*.tmp
+
+# Web publishing
+PublishProfiles/
+*.pubxml.user
+
+# SQL Server / Local DB
+*.mdf
+*.ldf
+*.ndf
+
+# IIS / IIS Express
+.vs/
+iisexpress/
+applicationhost.config
+
+# Entity Framework
+*.edmx.diagram
+
+# Node / frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Azure / deployment
+*.publishsettings
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Rider
+.idea/
+
+# Backup files
+*.orig
+*.old
+*.backup
+
+# User-specific configuration
+*.csproj.user
+*.csproj.user.*
